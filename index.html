@@ -154,41 +154,105 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--t0);font-famil
   gap:10px;padding:14px 10px 0;
   position:relative;z-index:2;
 }
-.podio-slot{display:flex;flex-direction:column;align-items:center;cursor:default;transition:.25s}
-.podio-slot:hover{transform:translateY(-5px)}
-.slot-crown{font-size:1.5rem;margin-bottom:3px;animation:crownFloat 2.5s ease-in-out infinite;filter:drop-shadow(0 0 8px var(--gold))}
-@keyframes crownFloat{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-5px) rotate(4deg)}}
-.slot-medal{font-size:1.1rem;margin-bottom:3px}
-.slot-rank-sm{font-size:.68rem;color:var(--t2);margin-bottom:3px;font-weight:700}
-/* photo circle */
+.podio-slot{display:flex;flex-direction:column;align-items:center;cursor:default;transition:.3s}
+.podio-slot:hover{transform:translateY(-6px) scale(1.02)}
+
+/* CROWN & MEDALS */
+.slot-crown{font-size:1.8rem;margin-bottom:4px;animation:crownFloat 2.5s ease-in-out infinite;filter:drop-shadow(0 0 14px #FFD700) drop-shadow(0 0 28px rgba(255,165,0,.6))}
+@keyframes crownFloat{0%,100%{transform:translateY(0) rotate(-5deg) scale(1)}50%{transform:translateY(-7px) rotate(5deg) scale(1.08)}}
+.slot-medal{font-size:1.2rem;margin-bottom:3px;animation:medalSpin 4s ease-in-out infinite}
+@keyframes medalSpin{0%,100%{transform:rotateY(0deg)}50%{transform:rotateY(180deg)}}
+.slot-rank-sm{font-size:.7rem;color:var(--t2);margin-bottom:3px;font-weight:800;font-family:'Bebas Neue';letter-spacing:1px}
+
+/* PHOTO CIRCLE */
 .photo-circle{border-radius:50%;overflow:hidden;position:relative;flex-shrink:0}
 .photo-circle img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block}
+
+/* GOLD #1 — pulsing fire glow */
 .photo-ring-1{
-  padding:3px;
-  background:linear-gradient(135deg,#FFD700,#FF8C00,#FFD700);
-  box-shadow:0 0 0 3px rgba(255,215,0,.25),0 0 30px rgba(255,200,0,.5),0 0 60px rgba(255,165,0,.2);
-  animation:goldGlow 2s ease-in-out infinite alternate;
+  padding:4px;
+  background:conic-gradient(#FFD700,#FF8C00,#FFE566,#FF4500,#FFD700);
+  box-shadow:
+    0 0 0 2px rgba(255,215,0,.3),
+    0 0 20px rgba(255,200,0,.7),
+    0 0 45px rgba(255,140,0,.5),
+    0 0 80px rgba(255,69,0,.25);
+  animation:goldFireGlow 1.8s ease-in-out infinite alternate;
 }
-@keyframes goldGlow{from{box-shadow:0 0 0 3px rgba(255,215,0,.25),0 0 25px rgba(255,200,0,.5)}to{box-shadow:0 0 0 3px rgba(255,215,0,.5),0 0 45px rgba(255,200,0,.7),0 0 70px rgba(255,165,0,.3)}}
-.photo-ring-2{padding:2.5px;background:linear-gradient(135deg,#C0C0C0,#808080);box-shadow:0 0 15px rgba(192,192,192,.3)}
-.photo-ring-3{padding:2.5px;background:linear-gradient(135deg,#CD7F32,#8B4513);box-shadow:0 0 12px rgba(205,127,50,.3)}
-.photo-ring-n{padding:2px;background:linear-gradient(135deg,rgba(255,255,255,.15),rgba(255,255,255,.05))}
-.s-name{font-weight:800;font-size:.78rem;margin-top:6px;text-align:center;color:#fff;letter-spacing:.01em}
-.s-count{font-size:1.05rem;color:var(--gold);margin-top:3px;text-align:center;font-family:'Bebas Neue';letter-spacing:1px;text-shadow:0 0 12px rgba(245,197,24,.5)}
-/* platforms */
-.platform{border-radius:8px 8px 3px 3px;margin-top:6px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue';font-size:1.6rem;color:rgba(0,0,0,.45);position:relative;overflow:hidden}
-.platform::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.15) 0%,transparent 100%)}
-.platform-shine{position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.25),transparent);animation:platShine 3s ease-in-out infinite}
-@keyframes platShine{0%{left:-100%}100%{left:150%}}
-.p1{width:86px;height:78px;background:linear-gradient(160deg,#F5C518,#A07010)}
-.p2{width:72px;height:58px;background:linear-gradient(160deg,#D0D0D0,#909090)}
-.p3{width:62px;height:44px;background:linear-gradient(160deg,#CD7F32,#7B3F00)}
+@keyframes goldFireGlow{
+  from{box-shadow:0 0 0 2px rgba(255,215,0,.3),0 0 20px rgba(255,200,0,.7),0 0 45px rgba(255,140,0,.5),0 0 80px rgba(255,69,0,.25)}
+  to{box-shadow:0 0 0 4px rgba(255,215,0,.6),0 0 35px rgba(255,200,0,.9),0 0 70px rgba(255,140,0,.7),0 0 110px rgba(255,69,0,.4)}
+}
+
+/* SILVER #2 */
+.photo-ring-2{
+  padding:3px;
+  background:linear-gradient(135deg,#E8E8E8,#C0C0C0,#A8A8A8,#C0C0C0);
+  box-shadow:0 0 20px rgba(192,192,192,.5),0 0 40px rgba(192,192,192,.2);
+  animation:silverGlow 2.5s ease-in-out infinite alternate;
+}
+@keyframes silverGlow{
+  from{box-shadow:0 0 15px rgba(192,192,192,.4),0 0 30px rgba(192,192,192,.15)}
+  to{box-shadow:0 0 30px rgba(220,220,220,.6),0 0 55px rgba(192,192,192,.3)}
+}
+
+/* BRONZE #3 */
+.photo-ring-3{
+  padding:3px;
+  background:linear-gradient(135deg,#E07B39,#CD7F32,#8B4513);
+  box-shadow:0 0 15px rgba(205,127,50,.5),0 0 35px rgba(205,127,50,.2);
+  animation:bronzeGlow 3s ease-in-out infinite alternate;
+}
+@keyframes bronzeGlow{
+  from{box-shadow:0 0 12px rgba(205,127,50,.4),0 0 25px rgba(205,127,50,.15)}
+  to{box-shadow:0 0 25px rgba(205,127,50,.6),0 0 50px rgba(205,127,50,.3)}
+}
+
+/* OTHERS */
+.photo-ring-n{padding:2px;background:linear-gradient(135deg,rgba(255,255,255,.2),rgba(255,255,255,.06));box-shadow:0 0 8px rgba(255,255,255,.08)}
+
+/* NAME & COUNT */
+.s-name{font-weight:800;font-size:.8rem;margin-top:7px;text-align:center;color:#fff;letter-spacing:.01em;text-shadow:0 1px 6px rgba(0,0,0,.8)}
+.s-count{
+  font-family:'Bebas Neue';
+  font-size:1.55rem;
+  color:var(--gold);
+  margin-top:2px;
+  text-align:center;
+  letter-spacing:1px;
+  text-shadow:0 0 16px rgba(245,197,24,.7),0 0 32px rgba(245,197,24,.3);
+  line-height:1;
+}
+.s-count-1{
+  font-size:2rem;
+  color:#FFD700;
+  text-shadow:0 0 20px rgba(255,215,0,.9),0 0 40px rgba(255,165,0,.5),0 0 60px rgba(255,69,0,.2);
+  animation:countPulse 2s ease-in-out infinite;
+}
+@keyframes countPulse{0%,100%{text-shadow:0 0 20px rgba(255,215,0,.9),0 0 40px rgba(255,165,0,.5)}50%{text-shadow:0 0 30px rgba(255,215,0,1),0 0 60px rgba(255,165,0,.8),0 0 90px rgba(255,69,0,.4)}}
+.s-label{font-size:.55rem;color:var(--t2);text-align:center;text-transform:uppercase;letter-spacing:.1em;margin-top:1px}
+
+/* PLATFORMS */
+.platform{border-radius:10px 10px 4px 4px;margin-top:7px;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue';font-size:1.8rem;color:rgba(0,0,0,.4);position:relative;overflow:hidden}
+.platform::before{content:'';position:absolute;top:0;left:0;right:0;height:40%;background:linear-gradient(180deg,rgba(255,255,255,.2) 0%,transparent 100%)}
+.platform-shine{position:absolute;top:0;left:-100%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);animation:platShine 2.8s ease-in-out infinite}
+@keyframes platShine{0%{left:-100%}100%{left:160%}}
+.p1{width:92px;height:86px;background:linear-gradient(160deg,#F5C518 0%,#D4A017 50%,#8B6914 100%);box-shadow:0 4px 20px rgba(245,197,24,.4) inset,0 -2px 10px rgba(0,0,0,.5)}
+.p2{width:76px;height:64px;background:linear-gradient(160deg,#E0E0E0 0%,#C0C0C0 50%,#888 100%);box-shadow:0 4px 15px rgba(192,192,192,.3) inset}
+.p3{width:66px;height:48px;background:linear-gradient(160deg,#E07B39 0%,#CD7F32 50%,#7B3F00 100%);box-shadow:0 4px 12px rgba(205,127,50,.3) inset}
+
+/* FIRE PARTICLES on #1 slot */
+.fire-particle{position:absolute;width:4px;height:4px;border-radius:50%;background:#FF4500;pointer-events:none;animation:fireUp linear infinite}
+@keyframes fireUp{0%{transform:translateY(0) scale(1);opacity:.9}100%{transform:translateY(-40px) scale(0);opacity:0}}
+
 .podio-motto{
   text-align:center;padding:10px;
-  font-family:'Bebas Neue';font-size:.95rem;color:var(--gold);letter-spacing:.25em;
-  border-top:1px solid rgba(245,197,24,.15);margin:0 10px;
-  text-shadow:0 0 15px rgba(245,197,24,.4);
+  font-family:'Bebas Neue';font-size:1rem;color:var(--gold);letter-spacing:.3em;
+  border-top:1px solid rgba(245,197,24,.15);margin:0 12px;
+  text-shadow:0 0 20px rgba(245,197,24,.5);
+  animation:mottoGlow 3s ease-in-out infinite;
 }
+@keyframes mottoGlow{0%,100%{color:var(--gold);text-shadow:0 0 15px rgba(245,197,24,.4)}50%{color:var(--gold3);text-shadow:0 0 25px rgba(245,197,24,.8)}}
 
 /* ═══ PROGRESS CARD ═══ */
 .prog-card{
@@ -582,37 +646,61 @@ const IMG_TAILANA = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgG
 })();
 
 // ══ TEAM DATA ══
+// TEAM — keys match seller names in the sheet
 const TEAM = [
-  {key:'emily',    name:'Emily Pérez',       photo:IMG_EMILY,     col:'#FFD700'},
-  {key:'danna',    name:'Danna Valentina',   photo:IMG_DANNA,     col:'#38BDF8'},
-  {key:'mileida',  name:'Mileida Quintero',  photo:IMG_MILEIDA,   col:'#A78BFA'},
-  {key:'katherine',name:'Katherine Bayona',  photo:IMG_KATHERINE, col:'#22C55E'},
-  {key:'natalia',  name:'Natalia',           photo:IMG_NATALIA,   col:'#F59E0B'},
-  {key:'tailana',  name:'Tailana',           photo:IMG_TAILANA,   col:'#F43F5E'},
-  {key:'gabriela', name:'Gabriela',          photo:IMG_GABRIELA,  col:'#4ECDC4'},
-  {key:'cristian', name:'Cristian Cáceres',  photo:IMG_CRISTIAN,  col:'#95E1D3'},
-  {key:'luisa',    name:'Luisa',             photo:IMG_LUISA,     col:'#F8B500'},
-  {key:'maria',    name:'María F. Quezada',  photo:IMG_MARIA,     col:'#C5A3FF'},
+  {key:'emily',    name:'Emily',           photo:IMG_EMILY,     col:'#FFD700'},
+  {key:'mileida',  name:'Mileida',         photo:IMG_MILEIDA,   col:'#A78BFA'},
+  {key:'dana',     name:'Danna',           photo:IMG_DANNA,     col:'#38BDF8'},
+  {key:'maria',    name:'María F.',        photo:IMG_MARIA,     col:'#C5A3FF'},
+  {key:'katherine',name:'Katherine',       photo:IMG_KATHERINE, col:'#22C55E'},
+  {key:'tailana',  name:'Tailana',         photo:IMG_TAILANA,   col:'#F43F5E'},
+  {key:'gabriela', name:'Gabriela',        photo:IMG_GABRIELA,  col:'#4ECDC4'},
+  {key:'cristian', name:'Cristian',        photo:IMG_CRISTIAN,  col:'#95E1D3'},
+  {key:'tatiana',  name:'Tatiana',         photo:IMG_LUISA,     col:'#F8B500'},
+  {key:'jessica',  name:'Jessica',         photo:IMG_NATALIA,   col:'#F59E0B'},
 ];
 
-const SHEET_ID='YOUR_SHEET_ID';
-const API_KEY='YOUR_API_KEY';
-const USE_DEMO=true;
+// Seller name → key mapping for sheet parsing
+const SELLER_NAME_MAP = [
+  {key:'jessica',   words:['jessica']},
+  {key:'tatiana',   words:['tatiana']},
+  {key:'mileida',   words:['mileida']},
+  {key:'maria',     words:['maria f','mafe carrascal','mafe c','maria fer']},
+  {key:'dana',      words:['dana','danna']},
+  {key:'emily',     words:['emily']},
+  {key:'katherine', words:['katherine','katerine']},
+  {key:'gabriela',  words:['gabriela']},
+  {key:'tailana',   words:['tailana']},
+  {key:'cristian',  words:['cristian']},
+  {key:'luisa',     words:['luisa']},
+  {key:'natalia',   words:['natalia']},
+  {key:'carlos',    words:['carlos']},
+];
 
+const SHEET_ID='1zM5uU_OAfqQUxyq1od4gOMNEjkWs27mBMhRaA5J6ITE';
+const GID='1826482730';
+const USE_DEMO=false;
+
+// ── FALLBACK DATA (se reemplaza con datos reales del Sheet en cada sync) ──
 let dashData = {
   team:[
-    {key:'emily',clientes:8},{key:'danna',clientes:5},
-    {key:'mileida',clientes:3},{key:'katherine',clientes:2},
-    {key:'natalia',clientes:2},{key:'tailana',clientes:2},
-    {key:'gabriela',clientes:1},{key:'cristian',clientes:1},
-    {key:'luisa',clientes:0},{key:'maria',clientes:0},
+    {key:'emily',    clientes:11},
+    {key:'mileida',  clientes:11},
+    {key:'dana',     clientes:11},
+    {key:'maria',    clientes:11},
+    {key:'katherine',clientes:10},
+    {key:'tailana',  clientes:10},
+    {key:'gabriela', clientes:9},
+    {key:'tatiana',  clientes:7},
+    {key:'cristian', clientes:7},
+    {key:'jessica',  clientes:1},
   ],
   recent:[
-    {name:'Miriam Yaneth Guanga',time:'Hace 2 min'},
-    {name:'Teresa Y Mendoza',time:'Hace 5 min'},
-    {name:'Daniel Atiguila',time:'Hace 8 min'},
-    {name:'Santos A Salinas',time:'Hace 12 min'},
-    {name:'Michael Piñero',time:'Hace 15 min'},
+    {name:'Catherine J Penaloza',           time:'Hace 2 min'},
+    {name:'Sindy Fernanda Carmona Velasco', time:'Hace 8 min'},
+    {name:'Dayaneth Silva',                 time:'Hace 15 min'},
+    {name:'Miriam manjarres',               time:'Hace 22 min'},
+    {name:'Kelly aleman',                   time:'Hace 30 min'},
   ]
 };
 
@@ -705,12 +793,12 @@ function renderPodio(sorted){
   if(!stage) return;
   stage.innerHTML='';
   const top5=sorted.slice(0,5);
-  // visual order: pos2, pos1, pos3, pos4, pos5
+  // visual order: 2nd left, 1st center, 3rd right, 4th, 5th
   const order=[1,0,2,3,4];
   const ringClass=['photo-ring-2','photo-ring-1','photo-ring-3','photo-ring-n','photo-ring-n'];
   const platClass=['p2','p1','p3',null,null];
   const rankNums=[2,1,3,4,5];
-  const sizes=[85,108,72,58,58];
+  const sizes=[90,115,76,60,60];
 
   order.forEach((idx,vi)=>{
     if(!top5[idx]) return;
@@ -718,10 +806,10 @@ function renderPodio(sorted){
     const m=TEAM.find(t=>t.key===p.key)||{name:p.key,photo:null,col:'#888'};
     const rank=rankNums[vi];
     const sz=sizes[vi];
+    const isFirst=rank===1;
 
     const slot=document.createElement('div');
     slot.className='podio-slot';
-    slot.style.setProperty('--delay',(vi*.12)+'s');
 
     const photoInner=m.photo
       ?`<img src="${m.photo}" width="${sz}" height="${sz}" alt="${m.name}" style="display:block">`
@@ -735,21 +823,45 @@ function renderPodio(sorted){
     const platHtml=platClass[vi]
       ?`<div class="platform ${platClass[vi]}">${rank}<div class="platform-shine"></div></div>`:'';
 
+    // Fire particles for #1
+    let fireHtml='';
+    if(isFirst){
+      const fireCols=['#FF4500','#FF6B00','#FFD700','#FF8C00','#FFAA00'];
+      for(let f=0;f<8;f++){
+        const col=fireCols[f%fireCols.length];
+        const left=15+Math.random()*70;
+        const dur=0.6+Math.random()*0.8;
+        const delay=Math.random()*1.2;
+        const startY=sz-10;
+        fireHtml+=`<div class="fire-particle" style="left:${left}%;bottom:${startY}px;background:${col};width:${3+Math.random()*4}px;height:${3+Math.random()*4}px;animation-duration:${dur}s;animation-delay:-${delay}s"></div>`;
+      }
+    }
+
+    const countClass=isFirst?'s-count s-count-1':'s-count';
+    const countLabel=isFirst?`<div class="s-label">CLIENTES</div>`:`<div class="s-label">clientes</div>`;
+
     slot.innerHTML=`
       ${crownHtml}
-      <div class="photo-circle ${ringClass[vi]}" style="animation-delay:${vi*.15}s">${photoInner}</div>
+      <div style="position:relative">
+        <div class="photo-circle ${ringClass[vi]}">${photoInner}</div>
+        ${fireHtml}
+      </div>
       <div class="s-name">${m.name.split(' ')[0]}</div>
-      <div class="s-count">${p.clientes} cliente${p.clientes!==1?'s':''}</div>
+      <div class="${countClass}">${p.clientes}</div>
+      ${countLabel}
       ${platHtml}
     `;
-    // stagger entrance
+
+    // Dramatic stagger entrance
     slot.style.opacity='0';
-    slot.style.transform='translateY(-20px)';
+    const enterY = isFirst ? '-35px' : '-20px';
+    slot.style.transform=`translateY(${enterY}) scale(0.85)`;
     setTimeout(()=>{
-      slot.style.transition='opacity .5s ease, transform .5s ease';
+      slot.style.transition='opacity .6s cubic-bezier(.4,0,.2,1), transform .6s cubic-bezier(.4,0,.2,1)';
       slot.style.opacity='1';
-      slot.style.transform='translateY(0)';
-    }, vi*120+100);
+      slot.style.transform='translateY(0) scale(1)';
+    }, vi*140 + (isFirst?50:160));
+
     stage.appendChild(slot);
   });
 }
@@ -847,11 +959,12 @@ function simUpdate(){
 }
 
 // ══ SYNC ══
-function syncNow(){
+async function syncNow(){
   const btn=document.getElementById('sync-btn');
   if(btn){btn.textContent='⟳ Syncing...';btn.disabled=true;}
-  setTimeout(()=>{
-    if(USE_DEMO) simUpdate(); else fetchSheets();
+  await new Promise(r=>setTimeout(r,200));
+  {
+    await (USE_DEMO||USE_DEMO_FALLBACK ? Promise.resolve(simUpdate()) : fetchSheets());
     render();
     const n=new Date();
     const ts=`${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')} ${n.getHours()>=12?'p.m.':'a.m.'}`;
@@ -861,33 +974,259 @@ function syncNow(){
 }
 
 async function fetchSheets(){
-  if(USE_DEMO) return;
   try{
-    const url=`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Sheet1!A:Z?key=${API_KEY}`;
+    // Uses Google Visualization API — no API key needed, just needs sheet to be public
+    const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${GID}&t=${Date.now()}`;
     const res=await fetch(url);
-    const json=await res.json();
-    if(json.values?.length>1) processSheet(json.values);
-  }catch(e){console.log('Sheets:',e)}
+    const text=await res.text();
+    // Strip google's wrapper: /*O_o*/\ngoogle.visualization.Query.setResponse({...})
+    const jsonStr=text.replace(/^[\s\S]*?setResponse\(/, '').replace(/\);?\s*$/, '');
+    const data=JSON.parse(jsonStr);
+    if(data?.table) processGviz(data.table);
+  }catch(e){
+    console.log('Sheets error — activando demo:',e);
+    USE_DEMO_FALLBACK=true;
+  }
 }
 
-function processSheet(rows){
-  const hdr=rows[0].map(h=>h.toLowerCase().trim());
-  const si=hdr.findIndex(h=>h.includes('vendedor')||h.includes('seller'));
-  const ni=hdr.findIndex(h=>h.includes('nombre')||h.includes('cliente')||h.includes('name'));
-  const counts={};
-  TEAM.forEach(t=>counts[t.key]=0);
-  rows.slice(1).forEach(row=>{
-    if(si>=0&&row[si]){
-      const sn=row[si].toLowerCase();
-      const member=TEAM.find(t=>sn.includes(t.name.split(' ')[0].toLowerCase()));
-      if(member) counts[member.key]++;
+let USE_DEMO_FALLBACK=false;
+
+function processGviz(table){
+  // Sheet structure:
+  // Row 0 = month label
+  // Row 1 = seller names (every 3 cols: name, price, commission)
+  // Rows 2..N = client data per seller
+  // Near the end: row with "CLIENTES" in col 0, then counts per seller column
+  // Near the end: row with "META" in col 0, then meta per seller column
+
+  const rows = table.rows || [];
+  const cols = table.cols || [];
+
+  // Get cell value helper
+  const getV = (row, ci) => {
+    const cells = row.c || [];
+    if(ci >= cells.length || !cells[ci]) return '';
+    const c = cells[ci];
+    return (c.v != null ? String(c.v) : (c.f || '')).trim();
+  };
+
+  // Step 1: Find the header row (has seller names)
+  let headerRowIdx = -1;
+  let sellerCols = {}; // colIdx -> sellerName
+
+  // Col labels from table.cols
+  const colLabels = cols.map(c => (c.label || c.id || '').trim());
+  
+  // Find seller name columns from header
+  const SELLER_KEYS = {
+    'jessica':   {key:'jessica',   keywords:['jessica']},
+    'tatiana':   {key:'tatiana',   keywords:['tatiana']},
+    'mileida':   {key:'mileida',   keywords:['mileida']},
+    'carolina':  {key:'carolina',  keywords:['carolina']},
+    'maria f':   {key:'maria',     keywords:['maria f','mafe c','maf']},
+    'dana':      {key:'dana',      keywords:['dana','danna']},
+    'emily':     {key:'emily',     keywords:['emily']},
+    'katerine':  {key:'katherine', keywords:['katerine','katherine','kath']},
+    'gabriela':  {key:'gabriela',  keywords:['gabriela']},
+    'tailana':   {key:'tailana',   keywords:['tailana']},
+    'carlos':    {key:'carlos',    keywords:['carlos']},
+    'breiner':   {key:'breiner',   keywords:['breiner']},
+    'luisa':     {key:'luisa',     keywords:['luisa']},
+    'natalia':   {key:'natalia',   keywords:['natalia']},
+    'julian':    {key:'julian',    keywords:['julian']},
+    'cristian':  {key:'cristian',  keywords:['cristian']},
+  };
+
+  // Try to find header row in data rows
+  rows.forEach((row, ri) => {
+    const v0 = getV(row, 0);
+    const v1 = getV(row, 1);
+    if(v1.toUpperCase().includes('JESSICA') || v1.toUpperCase().includes('TATIANA') || v1.toUpperCase().includes('EMILY')){
+      headerRowIdx = ri;
+      // Map each col to a seller
+      (row.c||[]).forEach((cell, ci) => {
+        const lbl = (cell?.v || cell?.f || '').toString().trim().toLowerCase();
+        for(const [, sm] of Object.entries(SELLER_KEYS)){
+          if(sm.keywords.some(kw => lbl.includes(kw))){
+            sellerCols[ci] = sm.key;
+            break;
+          }
+        }
+      });
     }
   });
-  dashData.team=TEAM.map(t=>({key:t.key,clientes:counts[t.key]||0}));
-  dashData.recent=rows.slice(1).reverse().slice(0,10).map((r,i)=>({name:r[ni]||'Cliente nuevo',time:i===0?'Hace 1 min':`Hace ${i*5+2} min`}));
+
+  // Also try from col labels directly (some sheets put names in col headers)
+  colLabels.forEach((lbl, ci) => {
+    const ll = lbl.toLowerCase();
+    for(const [, sm] of Object.entries(SELLER_KEYS)){
+      if(sm.keywords.some(kw => ll.includes(kw))){
+        sellerCols[ci] = sm.key;
+      }
+    }
+  });
+
+  console.log('Header row idx:', headerRowIdx);
+  console.log('Seller columns:', sellerCols);
+
+  // Step 2: Find CLIENTES summary row
+  const counts = {};
+  TEAM.forEach(t => counts[t.key] = 0);
+  let foundClientesRow = false;
+  let meta = parseInt(document.getElementById('meta-input').value)||100;
+
+  rows.forEach((row, ri) => {
+    const v0 = getV(row, 0).toUpperCase();
+    if(v0.includes('CLIENTES') && !v0.includes('REGISTRADOS') && !v0.includes('FALTAN')){
+      foundClientesRow = true;
+      console.log('Found CLIENTES row at', ri);
+      // Read counts by seller column position
+      Object.entries(sellerCols).forEach(([ci, key]) => {
+        const val = getV(row, parseInt(ci));
+        const num = parseInt(val.replace(/[^0-9]/g, ''));
+        if(!isNaN(num) && num > 0){
+          counts[key] = (counts[key] || 0) + num;
+        }
+      });
+    }
+    // Also look for META row
+    if(v0 === 'META' || v0.startsWith('META ')){
+      const firstNum = (row.c||[]).map(c=>c?.v).find(v=>typeof v==='number'&&v>0);
+      if(firstNum && firstNum > 1){
+        // Could be the team meta
+      }
+    }
+  });
+
+  // Step 3: If no CLIENTES row found, count non-empty client cells manually
+  if(!foundClientesRow || Object.values(counts).every(v => v === 0)){
+    console.log('Counting manually from client rows...');
+    const skipKeywords = ['meta','clientes','%','total','comision','bono','semana','updates','breiner','julian'];
+    rows.forEach((row, ri) => {
+      if(ri <= headerRowIdx) return;
+      const v0 = getV(row, 0);
+      // Skip summary/header rows
+      if(skipKeywords.some(kw => v0.toLowerCase().includes(kw))) return;
+      // Count non-empty cells in seller columns
+      Object.entries(sellerCols).forEach(([ci, key]) => {
+        const val = getV(row, parseInt(ci));
+        if(val.length > 3 && !val.startsWith('$') && isNaN(parseFloat(val.replace(/[$,]/g,'')))){
+          counts[key] = (counts[key] || 0) + 1;
+        }
+      });
+    });
+  }
+
+  // Step 4: Build recent list from last client entries
+  const recentEntries = [];
+  const skipKw = ['meta','clientes','%','total','comision','bono','semana'];
+  rows.forEach((row, ri) => {
+    if(ri <= headerRowIdx) return;
+    const v0 = getV(row, 0);
+    if(skipKw.some(kw => v0.toLowerCase().includes(kw))) return;
+    Object.keys(sellerCols).forEach(ci => {
+      const name = getV(row, parseInt(ci));
+      if(name.length > 4 && !name.startsWith('$') && isNaN(parseFloat(name.replace(/[$,]/g,'')))){
+        recentEntries.push(name);
+      }
+    });
+  });
+
+  dashData.team = TEAM.map(t => ({key:t.key, clientes: counts[t.key] || 0}));
+  const times = ['Hace 1 min','Hace 5 min','Hace 10 min','Hace 15 min','Hace 20 min','Hace 25 min','Hace 30 min','Hace 40 min','Hace 50 min','Hace 1 h'];
+  dashData.recent = recentEntries.slice(-10).reverse().map((n,i)=>({name:n, time:times[i]||'Reciente'}));
+  console.log('Final counts:', dashData.team);
 }
 
-// ══ AUTO SYNC ══
+function startAutoSync(){
+  if(syncTimer) clearInterval(syncTimer);
+  const ms=(parseInt(document.getElementById('sync-interval')?.value)||10)*1000;
+  syncTimer=setInterval(syncNow,ms);
+}
+document.getElementById('sync-interval')?.addEventListener('change',startAutoSync);
+document.getElementById('meta-input')?.addEventListener('change',render);
+
+// ══ BOOT ══
+render();
+syncNow();
+startAutoSync();
+</script>
+</body>
+</htmlfunction processGviz(table){
+  // Sheet structure: seller name is the column header.
+  // In data rows, that SAME column index contains the client name.
+  // Pattern per seller: col N = client name, col N+1 = price, col N+2 = commission
+  const cols = table.cols.map(c => (c.label||c.id||'').trim());
+  console.log('Columns:', cols);
+
+  // Map seller header names to team keys
+  const SELLER_KEY_MAP = {
+    'jessica':  'jessica',
+    'tatiana':  'tatiana',
+    'mileida':  'mileida',
+    'carolina': 'carolina',
+    'maria f':  'maria',
+    'dana':     'dana',
+    'danna':    'dana',
+    'emily':    'emily',
+    'katerine': 'katherine',
+    'katherine':'katherine',
+    'gabriela': 'gabriela',
+    'tailana':  'tailana',
+    'carlos':   'carlos',
+    'breiner':  'breiner',
+    'luisa':    'luisa',
+    'natalia':  'natalia',
+    'mafe carrascal': 'mafe',
+    'julian':   'julian',
+    'cristian caseres': 'cristian',
+    'cristian': 'cristian',
+  };
+
+  // Find seller columns
+  const sellerCols = {}; // teamKey -> [colIdx]
+  cols.forEach((colName, ci) => {
+    const cn = colName.toLowerCase().trim();
+    for(const [keyword, teamKey] of Object.entries(SELLER_KEY_MAP)){
+      if(cn === keyword || cn.includes(keyword)){
+        if(!sellerCols[teamKey]) sellerCols[teamKey] = [];
+        if(!sellerCols[teamKey].includes(ci)) sellerCols[teamKey].push(ci);
+        break;
+      }
+    }
+  });
+  console.log('Seller cols:', sellerCols);
+
+  const counts = {};
+  TEAM.forEach(t => counts[t.key] = 0);
+  const recentEntries = [];
+  const SKIP = /^(meta|cliente|semana|total|bono|comision|actualiz|update|%|#div|\$|^\d+$)/i;
+
+  table.rows.forEach(row => {
+    const cells = row.c || [];
+    const getVal = ci => {
+      if(ci >= cells.length || !cells[ci]) return '';
+      return String(cells[ci].v ?? cells[ci].f ?? '').trim();
+    };
+
+    for(const [teamKey, colIdxs] of Object.entries(sellerCols)){
+      colIdxs.forEach(ci => {
+        const val = getVal(ci);
+        if(val && val.length > 3 && !SKIP.test(val)){
+          if(counts[teamKey] !== undefined) counts[teamKey]++;
+          recentEntries.push({name: val, key: teamKey});
+        }
+      });
+    }
+  });
+
+  dashData.team = TEAM.map(t => ({key: t.key, clientes: counts[t.key] || 0}));
+  const recent = recentEntries.slice(-10).reverse();
+  const labels = ['Hace 1 min','Hace 3 min','Hace 8 min','Hace 12 min','Hace 18 min','Hace 25 min','Hace 32 min','Hace 40 min','Hace 50 min','Hace 1 hora'];
+  dashData.recent = recent.map((r,i) => ({name: r.name, time: labels[i]||'Reciente'}));
+  console.log('Final counts:', dashData.team);
+}
+
 function startAutoSync(){
   if(syncTimer) clearInterval(syncTimer);
   const ms=(parseInt(document.getElementById('sync-interval')?.value)||10)*1000;
