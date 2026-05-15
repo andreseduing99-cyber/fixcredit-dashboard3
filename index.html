@@ -415,7 +415,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--t0);font-famil
 
 <!-- ═══ STATUS BAR ═══ -->
 <div class="statusbar">
-  <div class="s-connected"><span class="s-dot"></span>✅ Conectado — Google Sheets Mayo 2026 en tiempo real</div>
+  <div class="s-connected"><span class="s-dot"></span>✅ Conectado — Google Sheets Mayo 2026 · Publicado en la web</div>
   <div class="s-right">
     <span>🔄 Última sync: <span id="last-sync">--:--:-- --.-.</span></span>
     <select class="s-select" id="sync-interval">
@@ -677,30 +677,35 @@ const SELLER_NAME_MAP = [
   {key:'carlos',    words:['carlos']},
 ];
 
-const SHEET_ID='1zM5uU_OAfqQUxyq1od4gOMNEjkWs27mBMhRaA5J6ITE';
-const GID='1826482730';
-const USE_DEMO=false;
+const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSZdXSiiAghFO0PARK3gJWxzrYwF-KU7_WmH1YT8XBytsvSjkI73W7SgeLMV7gSNuYLQdLETQCYUPIi/pub?gid=1826482730&single=true&output=csv';
+let USE_DEMO = false;
 
 // ── FALLBACK DATA (se reemplaza con datos reales del Sheet en cada sync) ──
 let dashData = {
   team:[
-    {key:'emily',    clientes:11},
-    {key:'mileida',  clientes:11},
-    {key:'dana',     clientes:11},
-    {key:'maria',    clientes:11},
-    {key:'katherine',clientes:10},
-    {key:'tailana',  clientes:10},
-    {key:'gabriela', clientes:9},
-    {key:'tatiana',  clientes:7},
-    {key:'cristian', clientes:7},
-    {key:'jessica',  clientes:1},
+    {key:'tatiana',  clientes:8},
+    {key:'emily',    clientes:7},
+    {key:'maria',    clientes:6},
+    {key:'katherine',clientes:6},
+    {key:'dana',     clientes:5},
+    {key:'tailana',  clientes:5},
+    {key:'mileida',  clientes:4},
+    {key:'gabriela', clientes:4},
+    {key:'cristian', clientes:9},
+    {key:'carolina', clientes:1},
+    {key:'jessica',  clientes:0},
+    {key:'luisa',    clientes:0},
+    {key:'natalia',  clientes:0},
+    {key:'mafe',     clientes:0},
+    {key:'julian',   clientes:0},
+    {key:'carlos',   clientes:0},
   ],
   recent:[
-    {name:'Catherine J Penaloza',           time:'Hace 2 min'},
-    {name:'Sindy Fernanda Carmona Velasco', time:'Hace 8 min'},
-    {name:'Dayaneth Silva',                 time:'Hace 15 min'},
-    {name:'Miriam manjarres',               time:'Hace 22 min'},
-    {name:'Kelly aleman',                   time:'Hace 30 min'},
+    {name:'Jose Enrique Alvarez Yepez',  time:'Hace 2 min'},
+    {name:'Meliany Isbel Mercardo',      time:'Hace 8 min'},
+    {name:'Jhonathan Alexis Blanco',     time:'Hace 15 min'},
+    {name:'Ana Maria Moncayo',           time:'Hace 22 min'},
+    {name:'Juan Martinez',               time:'Hace 30 min'},
   ]
 };
 
@@ -962,9 +967,8 @@ function simUpdate(){
 async function syncNow(){
   const btn=document.getElementById('sync-btn');
   if(btn){btn.textContent='⟳ Syncing...';btn.disabled=true;}
-  await new Promise(r=>setTimeout(r,200));
   {
-    await (USE_DEMO||USE_DEMO_FALLBACK ? Promise.resolve(simUpdate()) : fetchSheets());
+    if(USE_DEMO) simUpdate(); else await fetchSheets();
     render();
     const n=new Date();
     const ts=`${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')} ${n.getHours()>=12?'p.m.':'a.m.'}`;
@@ -974,168 +978,140 @@ async function syncNow(){
 }
 
 async function fetchSheets(){
-  try{
-    // Uses Google Visualization API — no API key needed, just needs sheet to be public
-    const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${GID}&t=${Date.now()}`;
-    const res=await fetch(url);
-    const text=await res.text();
-    // Strip google's wrapper: /*O_o*/\ngoogle.visualization.Query.setResponse({...})
-    const jsonStr=text.replace(/^[\s\S]*?setResponse\(/, '').replace(/\);?\s*$/, '');
-    const data=JSON.parse(jsonStr);
-    if(data?.table) processGviz(data.table);
-  }catch(e){
-    console.log('Sheets error — activando demo:',e);
-    USE_DEMO_FALLBACK=true;
+  try {
+    const res = await fetch(CSV_URL + '&t=' + Date.now());
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    parseCSV(text);
+    console.log('✅ Sheet cargado correctamente');
+  } catch(e) {
+    console.warn('⚠️ No se pudo leer el sheet, usando datos actuales:', e.message);
+    USE_DEMO = true;
   }
 }
 
-let USE_DEMO_FALLBACK=false;
-
-function processGviz(table){
-  // Sheet structure:
-  // Row 0 = month label
-  // Row 1 = seller names (every 3 cols: name, price, commission)
-  // Rows 2..N = client data per seller
-  // Near the end: row with "CLIENTES" in col 0, then counts per seller column
-  // Near the end: row with "META" in col 0, then meta per seller column
-
-  const rows = table.rows || [];
-  const cols = table.cols || [];
-
-  // Get cell value helper
-  const getV = (row, ci) => {
-    const cells = row.c || [];
-    if(ci >= cells.length || !cells[ci]) return '';
-    const c = cells[ci];
-    return (c.v != null ? String(c.v) : (c.f || '')).trim();
-  };
-
-  // Step 1: Find the header row (has seller names)
-  let headerRowIdx = -1;
-  let sellerCols = {}; // colIdx -> sellerName
-
-  // Col labels from table.cols
-  const colLabels = cols.map(c => (c.label || c.id || '').trim());
-  
-  // Find seller name columns from header
-  const SELLER_KEYS = {
-    'jessica':   {key:'jessica',   keywords:['jessica']},
-    'tatiana':   {key:'tatiana',   keywords:['tatiana']},
-    'mileida':   {key:'mileida',   keywords:['mileida']},
-    'carolina':  {key:'carolina',  keywords:['carolina']},
-    'maria f':   {key:'maria',     keywords:['maria f','mafe c','maf']},
-    'dana':      {key:'dana',      keywords:['dana','danna']},
-    'emily':     {key:'emily',     keywords:['emily']},
-    'katerine':  {key:'katherine', keywords:['katerine','katherine','kath']},
-    'gabriela':  {key:'gabriela',  keywords:['gabriela']},
-    'tailana':   {key:'tailana',   keywords:['tailana']},
-    'carlos':    {key:'carlos',    keywords:['carlos']},
-    'breiner':   {key:'breiner',   keywords:['breiner']},
-    'luisa':     {key:'luisa',     keywords:['luisa']},
-    'natalia':   {key:'natalia',   keywords:['natalia']},
-    'julian':    {key:'julian',    keywords:['julian']},
-    'cristian':  {key:'cristian',  keywords:['cristian']},
-  };
-
-  // Try to find header row in data rows
-  rows.forEach((row, ri) => {
-    const v0 = getV(row, 0);
-    const v1 = getV(row, 1);
-    if(v1.toUpperCase().includes('JESSICA') || v1.toUpperCase().includes('TATIANA') || v1.toUpperCase().includes('EMILY')){
-      headerRowIdx = ri;
-      // Map each col to a seller
-      (row.c||[]).forEach((cell, ci) => {
-        const lbl = (cell?.v || cell?.f || '').toString().trim().toLowerCase();
-        for(const [, sm] of Object.entries(SELLER_KEYS)){
-          if(sm.keywords.some(kw => lbl.includes(kw))){
-            sellerCols[ci] = sm.key;
-            break;
-          }
-        }
-      });
+function parseCSV(text) {
+  // Split into rows, handling quoted commas
+  function splitRow(line) {
+    const result = [];
+    let cur = '', inQ = false;
+    for(let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if(c === '"') { inQ = !inQ; }
+      else if(c === ',' && !inQ) { result.push(cur.trim()); cur = ''; }
+      else { cur += c; }
     }
-  });
-
-  // Also try from col labels directly (some sheets put names in col headers)
-  colLabels.forEach((lbl, ci) => {
-    const ll = lbl.toLowerCase();
-    for(const [, sm] of Object.entries(SELLER_KEYS)){
-      if(sm.keywords.some(kw => ll.includes(kw))){
-        sellerCols[ci] = sm.key;
-      }
-    }
-  });
-
-  console.log('Header row idx:', headerRowIdx);
-  console.log('Seller columns:', sellerCols);
-
-  // Step 2: Find CLIENTES summary row
-  const counts = {};
-  TEAM.forEach(t => counts[t.key] = 0);
-  let foundClientesRow = false;
-  let meta = parseInt(document.getElementById('meta-input').value)||100;
-
-  rows.forEach((row, ri) => {
-    const v0 = getV(row, 0).toUpperCase();
-    if(v0.includes('CLIENTES') && !v0.includes('REGISTRADOS') && !v0.includes('FALTAN')){
-      foundClientesRow = true;
-      console.log('Found CLIENTES row at', ri);
-      // Read counts by seller column position
-      Object.entries(sellerCols).forEach(([ci, key]) => {
-        const val = getV(row, parseInt(ci));
-        const num = parseInt(val.replace(/[^0-9]/g, ''));
-        if(!isNaN(num) && num > 0){
-          counts[key] = (counts[key] || 0) + num;
-        }
-      });
-    }
-    // Also look for META row
-    if(v0 === 'META' || v0.startsWith('META ')){
-      const firstNum = (row.c||[]).map(c=>c?.v).find(v=>typeof v==='number'&&v>0);
-      if(firstNum && firstNum > 1){
-        // Could be the team meta
-      }
-    }
-  });
-
-  // Step 3: If no CLIENTES row found, count non-empty client cells manually
-  if(!foundClientesRow || Object.values(counts).every(v => v === 0)){
-    console.log('Counting manually from client rows...');
-    const skipKeywords = ['meta','clientes','%','total','comision','bono','semana','updates','breiner','julian'];
-    rows.forEach((row, ri) => {
-      if(ri <= headerRowIdx) return;
-      const v0 = getV(row, 0);
-      // Skip summary/header rows
-      if(skipKeywords.some(kw => v0.toLowerCase().includes(kw))) return;
-      // Count non-empty cells in seller columns
-      Object.entries(sellerCols).forEach(([ci, key]) => {
-        const val = getV(row, parseInt(ci));
-        if(val.length > 3 && !val.startsWith('$') && isNaN(parseFloat(val.replace(/[$,]/g,'')))){
-          counts[key] = (counts[key] || 0) + 1;
-        }
-      });
-    });
+    result.push(cur.trim());
+    return result;
   }
 
-  // Step 4: Build recent list from last client entries
-  const recentEntries = [];
-  const skipKw = ['meta','clientes','%','total','comision','bono','semana'];
-  rows.forEach((row, ri) => {
-    if(ri <= headerRowIdx) return;
-    const v0 = getV(row, 0);
-    if(skipKw.some(kw => v0.toLowerCase().includes(kw))) return;
-    Object.keys(sellerCols).forEach(ci => {
-      const name = getV(row, parseInt(ci));
-      if(name.length > 4 && !name.startsWith('$') && isNaN(parseFloat(name.replace(/[$,]/g,'')))){
-        recentEntries.push(name);
-      }
-    });
-  });
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  const rows = lines.map(splitRow);
 
-  dashData.team = TEAM.map(t => ({key:t.key, clientes: counts[t.key] || 0}));
-  const times = ['Hace 1 min','Hace 5 min','Hace 10 min','Hace 15 min','Hace 20 min','Hace 25 min','Hace 30 min','Hace 40 min','Hace 50 min','Hace 1 h'];
-  dashData.recent = recentEntries.slice(-10).reverse().map((n,i)=>({name:n, time:times[i]||'Reciente'}));
-  console.log('Final counts:', dashData.team);
+  // Row 0 = "3, MAYO 2026..."  Row 1 = seller headers
+  // Find the header row (contains seller names)
+  let headerRowIdx = -1;
+  let clientesRowIdx = -1;
+  let metaRowIdx = -1;
+
+  for(let i = 0; i < rows.length; i++) {
+    const first = (rows[i][0] || '').trim().toUpperCase();
+    const rowStr = rows[i].join(',').toUpperCase();
+    if(first === 'META' && rowStr.includes('15') && headerRowIdx >= 0) { metaRowIdx = i; }
+    if((first === 'CLIENTES' || first === 'CLIENTES ') && headerRowIdx >= 0 && clientesRowIdx < 0) { clientesRowIdx = i; }
+    // Header row: contains multiple seller names
+    if(rowStr.includes('EMILY') || rowStr.includes('TATIANA') || rowStr.includes('MILEIDA')) { headerRowIdx = i; }
+  }
+
+  console.log('headerRow:', headerRowIdx, 'clientesRow:', clientesRowIdx, 'metaRow:', metaRowIdx);
+
+  if(headerRowIdx < 0) { console.warn('No se encontró fila de encabezados'); USE_DEMO = true; return; }
+
+  const headerRow = rows[headerRowIdx];
+
+  // Map seller column positions
+  const SELLER_MAP = {
+    'jessica':  'jessica',
+    'tatiana':  'tatiana',
+    'mileida':  'mileida',
+    'carolina': 'carolina',
+    'maria f':  'maria',
+    'dana':     'dana',
+    'danna':    'dana',
+    'emily':    'emily',
+    'katerine': 'katherine',
+    'katherine':'katherine',
+    'gabriela': 'gabriela',
+    'tailana':  'tailana',
+    'carlos':   'carlos',
+    'breiner':  'breiner',
+    'luisa':    'luisa',
+    'natalia':  'natalia',
+    'mafe carrascal': 'mafe',
+    'mafe':     'mafe',
+    'julian':   'julian',
+    'cristian caseres': 'cristian',
+    'cristian': 'cristian',
+  };
+
+  const colMap = {}; // teamKey -> colIdx
+  headerRow.forEach((cell, ci) => {
+    const cn = cell.toLowerCase().trim();
+    for(const [kw, key] of Object.entries(SELLER_MAP)) {
+      if(cn.includes(kw)) { colMap[key] = ci; break; }
+    }
+  });
+  console.log('Column map:', colMap);
+
+  // If we have a CLIENTES row — use it directly (most accurate)
+  if(clientesRowIdx >= 0) {
+    const clientesRow = rows[clientesRowIdx];
+    const metaRow = metaRowIdx >= 0 ? rows[metaRowIdx] : [];
+    const counts = {};
+    const metas = {};
+    for(const [key, ci] of Object.entries(colMap)) {
+      const val = (clientesRow[ci] || '').replace(/[^0-9]/g, '');
+      counts[key] = val ? parseInt(val) : 0;
+      const mval = (metaRow[ci] || '').replace(/[^0-9]/g, '');
+      metas[key] = mval ? parseInt(mval) : 0;
+    }
+    dashData.team = TEAM.map(t => ({ key: t.key, clientes: counts[t.key] || 0 }));
+    console.log('Datos desde fila CLIENTES:', counts);
+  } else {
+    // Fallback: count non-empty client name cells per seller column
+    const counts = {};
+    TEAM.forEach(t => counts[t.key] = 0);
+    const SKIP = /^(meta|cliente|semana|total|bono|comision|\$|%|#div|^\d+$)/i;
+    for(let i = headerRowIdx + 1; i < rows.length; i++) {
+      const row = rows[i];
+      const first = (row[0] || '').trim().toUpperCase();
+      if(['META','CLIENTES','%'].some(k => first.startsWith(k))) break;
+      for(const [key, ci] of Object.entries(colMap)) {
+        const val = (row[ci] || '').trim();
+        if(val && val.length > 2 && !SKIP.test(val)) counts[key]++;
+      }
+    }
+    dashData.team = TEAM.map(t => ({ key: t.key, clientes: counts[t.key] || 0 }));
+    console.log('Datos contados manualmente:', counts);
+  }
+
+  // Recent clients: last non-empty names from any seller column
+  const recent = [];
+  const clientColIdxs = Object.values(colMap);
+  const SKIP2 = /^(meta|cliente|semana|total|bono|comision|\$|%|#div)/i;
+  for(let i = rows.length - 1; i > headerRowIdx && recent.length < 8; i--) {
+    const row = rows[i];
+    for(const ci of clientColIdxs) {
+      const val = (row[ci] || '').trim();
+      if(val && val.length > 3 && !SKIP2.test(val) && !recent.find(r => r.name === val)) {
+        recent.push({ name: val });
+        if(recent.length >= 8) break;
+      }
+    }
+  }
+  const labels = ['Hace 1 min','Hace 5 min','Hace 10 min','Hace 15 min','Hace 20 min','Hace 30 min','Hace 45 min','Hace 1 hora'];
+  dashData.recent = recent.map((r,i) => ({ name: r.name, time: labels[i] || 'Reciente' }));
+  console.log('Recent:', dashData.recent);
 }
 
 function startAutoSync(){
