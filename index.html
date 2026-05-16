@@ -967,14 +967,12 @@ function simUpdate(){
 async function syncNow(){
   const btn=document.getElementById('sync-btn');
   if(btn){btn.textContent='⟳ Syncing...';btn.disabled=true;}
-  {
-    if(USE_DEMO) simUpdate(); else await fetchSheets();
-    render();
-    const n=new Date();
-    const ts=`${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')} ${n.getHours()>=12?'p.m.':'a.m.'}`;
-    setText('last-sync',ts);
-    if(btn){btn.textContent='⟳ Sync';btn.disabled=false;}
-  },500);
+  if(USE_DEMO) simUpdate(); else await fetchSheets();
+  render();
+  const n=new Date();
+  const ts=`${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')} ${n.getHours()>=12?'p.m.':'a.m.'}`;
+  setText('last-sync',ts);
+  if(btn){btn.textContent='⟳ Sync';btn.disabled=false;}
 }
 
 async function fetchSheets(){
@@ -1033,95 +1031,6 @@ async function fetchSheets(){
     const sb = document.querySelector('.s-connected');
     if(sb) sb.innerHTML = '<span class="s-dot" style="background:#F59E0B"></span>⚠️ Sin conexión — mostrando datos de ejemplo';
   }
-}
-
-function startAutoSync(){
-  if(syncTimer) clearInterval(syncTimer);
-  const ms=(parseInt(document.getElementById('sync-interval')?.value)||10)*1000;
-  syncTimer=setInterval(syncNow,ms);
-}
-document.getElementById('sync-interval')?.addEventListener('change',startAutoSync);
-document.getElementById('meta-input')?.addEventListener('change',render);
-
-// ══ BOOT ══
-render();
-syncNow();
-startAutoSync();
-</script>
-</body>
-</htmlfunction processGviz(table){
-  // Sheet structure: seller name is the column header.
-  // In data rows, that SAME column index contains the client name.
-  // Pattern per seller: col N = client name, col N+1 = price, col N+2 = commission
-  const cols = table.cols.map(c => (c.label||c.id||'').trim());
-  console.log('Columns:', cols);
-
-  // Map seller header names to team keys
-  const SELLER_KEY_MAP = {
-    'jessica':  'jessica',
-    'tatiana':  'tatiana',
-    'mileida':  'mileida',
-    'carolina': 'carolina',
-    'maria f':  'maria',
-    'dana':     'dana',
-    'danna':    'dana',
-    'emily':    'emily',
-    'katerine': 'katherine',
-    'katherine':'katherine',
-    'gabriela': 'gabriela',
-    'tailana':  'tailana',
-    'carlos':   'carlos',
-    'breiner':  'breiner',
-    'luisa':    'luisa',
-    'natalia':  'natalia',
-    'mafe carrascal': 'mafe',
-    'julian':   'julian',
-    'cristian caseres': 'cristian',
-    'cristian': 'cristian',
-  };
-
-  // Find seller columns
-  const sellerCols = {}; // teamKey -> [colIdx]
-  cols.forEach((colName, ci) => {
-    const cn = colName.toLowerCase().trim();
-    for(const [keyword, teamKey] of Object.entries(SELLER_KEY_MAP)){
-      if(cn === keyword || cn.includes(keyword)){
-        if(!sellerCols[teamKey]) sellerCols[teamKey] = [];
-        if(!sellerCols[teamKey].includes(ci)) sellerCols[teamKey].push(ci);
-        break;
-      }
-    }
-  });
-  console.log('Seller cols:', sellerCols);
-
-  const counts = {};
-  TEAM.forEach(t => counts[t.key] = 0);
-  const recentEntries = [];
-  const SKIP = /^(meta|cliente|semana|total|bono|comision|actualiz|update|%|#div|\$|^\d+$)/i;
-
-  table.rows.forEach(row => {
-    const cells = row.c || [];
-    const getVal = ci => {
-      if(ci >= cells.length || !cells[ci]) return '';
-      return String(cells[ci].v ?? cells[ci].f ?? '').trim();
-    };
-
-    for(const [teamKey, colIdxs] of Object.entries(sellerCols)){
-      colIdxs.forEach(ci => {
-        const val = getVal(ci);
-        if(val && val.length > 3 && !SKIP.test(val)){
-          if(counts[teamKey] !== undefined) counts[teamKey]++;
-          recentEntries.push({name: val, key: teamKey});
-        }
-      });
-    }
-  });
-
-  dashData.team = TEAM.map(t => ({key: t.key, clientes: counts[t.key] || 0}));
-  const recent = recentEntries.slice(-10).reverse();
-  const labels = ['Hace 1 min','Hace 3 min','Hace 8 min','Hace 12 min','Hace 18 min','Hace 25 min','Hace 32 min','Hace 40 min','Hace 50 min','Hace 1 hora'];
-  dashData.recent = recent.map((r,i) => ({name: r.name, time: labels[i]||'Reciente'}));
-  console.log('Final counts:', dashData.team);
 }
 
 function startAutoSync(){
