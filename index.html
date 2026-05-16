@@ -677,7 +677,7 @@ const SELLER_NAME_MAP = [
   {key:'carlos',    words:['carlos']},
 ];
 
-const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSZdXSiiAghFO0PARK3gJWxzrYwF-KU7_WmH1YT8XBytsvSjkI73W7SgeLMV7gSNuYLQdLETQCYUPIi/pub?gid=1826482730&single=true&output=csv';
+// Apps Script URL configured below in fetchSheets()
 let USE_DEMO = false;
 
 // ── FALLBACK DATA (se reemplaza con datos reales del Sheet en cada sync) ──
@@ -978,140 +978,61 @@ async function syncNow(){
 }
 
 async function fetchSheets(){
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxfWFR9dIG2l3Nl2TUS0TYMkAwll1ypDynL08GCww_IPnn6fmgexDMw2Xy6dPzc48Uo/exec';
   try {
-    const res = await fetch(CSV_URL + '&t=' + Date.now());
+    const res = await fetch(APPS_SCRIPT_URL);
     if(!res.ok) throw new Error('HTTP ' + res.status);
-    const text = await res.text();
-    parseCSV(text);
-    console.log('✅ Sheet cargado correctamente');
-  } catch(e) {
-    console.warn('⚠️ No se pudo leer el sheet, usando datos actuales:', e.message);
-    USE_DEMO = true;
-  }
-}
+    const json = await res.json();
+    if(!json.ok) throw new Error('Script error');
 
-function parseCSV(text) {
-  // Split into rows, handling quoted commas
-  function splitRow(line) {
-    const result = [];
-    let cur = '', inQ = false;
-    for(let i = 0; i < line.length; i++) {
-      const c = line[i];
-      if(c === '"') { inQ = !inQ; }
-      else if(c === ',' && !inQ) { result.push(cur.trim()); cur = ''; }
-      else { cur += c; }
-    }
-    result.push(cur.trim());
-    return result;
-  }
+    // Map sheet seller names -> team keys
+    const NAME_MAP = {
+      'JESSICA':  'jessica', 'TATIANA':  'tatiana', 'TATIANA ': 'tatiana',
+      'MILEIDA':  'mileida', 'CAROLINA': 'carolina','MARIA F':  'maria',
+      'DANA':     'dana',    'EMILY':    'emily',    'KATERINE': 'katherine',
+      'KATHERINE':'katherine','GABRIELA': 'gabriela','GABRIELA ':'gabriela',
+      'TAILANA':  'tailana', 'CARLOS':   'carlos',   'Breiner':  'breiner',
+      'Breiner ': 'breiner', 'Luisa':    'luisa',    'Luisa ':   'luisa',
+      'Natalia':  'natalia', 'Mafe Carrascal':'mafe','JULIAN':   'julian',
+      'CRISTIAN CASERES':'cristian','ANDRES':'andres','CRISTIAN CACERES':'cristian',
+    };
 
-  const lines = text.split(/\r?\n/).filter(l => l.trim());
-  const rows = lines.map(splitRow);
-
-  // Row 0 = "3, MAYO 2026..."  Row 1 = seller headers
-  // Find the header row (contains seller names)
-  let headerRowIdx = -1;
-  let clientesRowIdx = -1;
-  let metaRowIdx = -1;
-
-  for(let i = 0; i < rows.length; i++) {
-    const first = (rows[i][0] || '').trim().toUpperCase();
-    const rowStr = rows[i].join(',').toUpperCase();
-    if(first === 'META' && rowStr.includes('15') && headerRowIdx >= 0) { metaRowIdx = i; }
-    if((first === 'CLIENTES' || first === 'CLIENTES ') && headerRowIdx >= 0 && clientesRowIdx < 0) { clientesRowIdx = i; }
-    // Header row: contains multiple seller names
-    if(rowStr.includes('EMILY') || rowStr.includes('TATIANA') || rowStr.includes('MILEIDA')) { headerRowIdx = i; }
-  }
-
-  console.log('headerRow:', headerRowIdx, 'clientesRow:', clientesRowIdx, 'metaRow:', metaRowIdx);
-
-  if(headerRowIdx < 0) { console.warn('No se encontró fila de encabezados'); USE_DEMO = true; return; }
-
-  const headerRow = rows[headerRowIdx];
-
-  // Map seller column positions
-  const SELLER_MAP = {
-    'jessica':  'jessica',
-    'tatiana':  'tatiana',
-    'mileida':  'mileida',
-    'carolina': 'carolina',
-    'maria f':  'maria',
-    'dana':     'dana',
-    'danna':    'dana',
-    'emily':    'emily',
-    'katerine': 'katherine',
-    'katherine':'katherine',
-    'gabriela': 'gabriela',
-    'tailana':  'tailana',
-    'carlos':   'carlos',
-    'breiner':  'breiner',
-    'luisa':    'luisa',
-    'natalia':  'natalia',
-    'mafe carrascal': 'mafe',
-    'mafe':     'mafe',
-    'julian':   'julian',
-    'cristian caseres': 'cristian',
-    'cristian': 'cristian',
-  };
-
-  const colMap = {}; // teamKey -> colIdx
-  headerRow.forEach((cell, ci) => {
-    const cn = cell.toLowerCase().trim();
-    for(const [kw, key] of Object.entries(SELLER_MAP)) {
-      if(cn.includes(kw)) { colMap[key] = ci; break; }
-    }
-  });
-  console.log('Column map:', colMap);
-
-  // If we have a CLIENTES row — use it directly (most accurate)
-  if(clientesRowIdx >= 0) {
-    const clientesRow = rows[clientesRowIdx];
-    const metaRow = metaRowIdx >= 0 ? rows[metaRowIdx] : [];
-    const counts = {};
-    const metas = {};
-    for(const [key, ci] of Object.entries(colMap)) {
-      const val = (clientesRow[ci] || '').replace(/[^0-9]/g, '');
-      counts[key] = val ? parseInt(val) : 0;
-      const mval = (metaRow[ci] || '').replace(/[^0-9]/g, '');
-      metas[key] = mval ? parseInt(mval) : 0;
-    }
-    dashData.team = TEAM.map(t => ({ key: t.key, clientes: counts[t.key] || 0 }));
-    console.log('Datos desde fila CLIENTES:', counts);
-  } else {
-    // Fallback: count non-empty client name cells per seller column
+    // Build counts from script response
     const counts = {};
     TEAM.forEach(t => counts[t.key] = 0);
-    const SKIP = /^(meta|cliente|semana|total|bono|comision|\$|%|#div|^\d+$)/i;
-    for(let i = headerRowIdx + 1; i < rows.length; i++) {
-      const row = rows[i];
-      const first = (row[0] || '').trim().toUpperCase();
-      if(['META','CLIENTES','%'].some(k => first.startsWith(k))) break;
-      for(const [key, ci] of Object.entries(colMap)) {
-        const val = (row[ci] || '').trim();
-        if(val && val.length > 2 && !SKIP.test(val)) counts[key]++;
-      }
+    for(const [sheetName, val] of Object.entries(json.counts)){
+      const key = NAME_MAP[sheetName] || NAME_MAP[sheetName.trim()];
+      if(key && counts[key] !== undefined) counts[key] += (parseInt(val)||0);
     }
-    dashData.team = TEAM.map(t => ({ key: t.key, clientes: counts[t.key] || 0 }));
-    console.log('Datos contados manualmente:', counts);
-  }
 
-  // Recent clients: last non-empty names from any seller column
-  const recent = [];
-  const clientColIdxs = Object.values(colMap);
-  const SKIP2 = /^(meta|cliente|semana|total|bono|comision|\$|%|#div)/i;
-  for(let i = rows.length - 1; i > headerRowIdx && recent.length < 8; i--) {
-    const row = rows[i];
-    for(const ci of clientColIdxs) {
-      const val = (row[ci] || '').trim();
-      if(val && val.length > 3 && !SKIP2.test(val) && !recent.find(r => r.name === val)) {
-        recent.push({ name: val });
-        if(recent.length >= 8) break;
-      }
+    dashData.team = TEAM.map(t => ({ key: t.key, clientes: counts[t.key] || 0 }));
+
+    // Recent clients
+    if(json.recent && json.recent.length > 0){
+      const labels = ['Hace 1 min','Hace 5 min','Hace 10 min','Hace 15 min',
+                      'Hace 20 min','Hace 30 min','Hace 45 min','Hace 1 hora'];
+      dashData.recent = json.recent.map((r,i) => ({
+        name: r.name, time: labels[i] || 'Reciente'
+      }));
     }
+
+    // Update meta from sheet total if available
+    const metaEl = document.getElementById('meta-input');
+    if(metaEl && json.metaEquipo) metaEl.value = json.metaEquipo;
+
+    console.log('✅ Apps Script OK — Total:', json.total, 'Counts:', counts);
+    setText('last-sync', new Date().toLocaleTimeString('es-CO'));
+    
+    // Update status bar
+    const sb = document.querySelector('.s-connected');
+    if(sb) sb.innerHTML = '<span class="s-dot"></span>✅ Conectado — Google Sheets Mayo 2026 · Datos en tiempo real';
+
+  } catch(e) {
+    console.warn('⚠️ Error Apps Script:', e.message);
+    USE_DEMO = true;
+    const sb = document.querySelector('.s-connected');
+    if(sb) sb.innerHTML = '<span class="s-dot" style="background:#F59E0B"></span>⚠️ Sin conexión — mostrando datos de ejemplo';
   }
-  const labels = ['Hace 1 min','Hace 5 min','Hace 10 min','Hace 15 min','Hace 20 min','Hace 30 min','Hace 45 min','Hace 1 hora'];
-  dashData.recent = recent.map((r,i) => ({ name: r.name, time: labels[i] || 'Reciente' }));
-  console.log('Recent:', dashData.recent);
 }
 
 function startAutoSync(){
